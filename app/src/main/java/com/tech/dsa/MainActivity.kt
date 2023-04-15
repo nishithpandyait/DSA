@@ -1,7 +1,6 @@
 package com.tech.dsa
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -14,10 +13,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
+import com.tech.dsa.data_layer.model.Task
 import com.tech.dsa.ui.theme.DSATheme
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,7 +37,7 @@ class MainActivity : ComponentActivity() {
         mutableListOf.add(str)
         mutableListOf.add(str)
 
-        val viewModel:MainViewModel by viewModels()
+        val viewModel: MainViewModel by viewModels()
 
 
 
@@ -53,7 +55,7 @@ class MainActivity : ComponentActivity() {
                         getSearchView() { search ->
                             viewModel.filterData(search = search)
                         }
-                        getListView(viewModel.items){
+                        getListView(viewModel) {
                             viewModel.items
                         }
                         FloatingActionButton(onClick = { /*TODO*/ }) {
@@ -93,14 +95,10 @@ class MainActivity : ComponentActivity() {
 
     }
 
-    data class Phone(val phoneNumber: String, var checkbox: Boolean = true) {
-
-    }
-
 
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
-    private fun getListView(items: List<Phone>, function: (mapIndexed: List<Phone>) -> Unit) {
+    private fun getListView(viewModel: MainViewModel, function: (mapIndexed: List<Task>) -> Unit) {
 
         val coroutine = rememberCoroutineScope()
 
@@ -108,14 +106,14 @@ class MainActivity : ComponentActivity() {
         LazyColumn() {
             items(items.size) { position ->
                 Column() {
-                    Text(modifier = Modifier.fillMaxSize(1f), text = items[position].phoneNumber)
+                    Text(modifier = Modifier.fillMaxSize(1f), text = items[position].taskName)
                     Checkbox(
                         checked = items[position].checkbox,
                         onCheckedChange = {
                             coroutine.launch(Dispatchers.IO) {
                                 function(items.mapIndexed { j, item ->
                                     if (j == position) {
-                                        item.copy(item.phoneNumber, item.checkbox.not())
+                                        item.copy(item.checkbox, item.checkbox.not())
                                     } else {
                                         item
                                     }
@@ -126,7 +124,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
 
 
 }
